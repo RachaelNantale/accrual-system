@@ -117,7 +117,12 @@ REST_FRAMEWORK = {
     ),
 }
 
+# CRON JOBS
 
+CRONJOBS = [
+    (' 0 0 1 * *', 'fenix.utilities.seniority.accruePoints', '>> /tmp/accruePoints.log'),
+    (' 0 0 1 * *', 'fenix.utilities.seniority.multipyPoints', '>> /tmp/multiplyPoints.log')
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
