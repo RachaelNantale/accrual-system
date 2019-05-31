@@ -1,7 +1,9 @@
 from django.contrib.auth import authenticate
-from rest_framework import serializers
+from rest_framework import serializers, status
+from rest_framework.response import Response
+from datetime import datetime, timezone
 
-from .models import User
+from .models import User, Profile
 from fenix.utilities.custom_validators import ValidateUserData
 
 
@@ -57,3 +59,43 @@ class LoginSerializer(serializers.Serializer):
         model = User
         fields = ['email', 'username', 'token']
         read_only_fields = ('token',)
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """Serializer for creating a profile"""
+    username = serializers.ReadOnlyField(source='user.username')
+    first_name = serializers.CharField(allow_blank=True, required=False,
+                                       min_length=2, max_length=50)
+    last_name = serializers.CharField(allow_blank=True, required=False,
+                                      min_length=2,
+                                      max_length=50)
+    tenure = serializers.SerializerMethodField(source='tenure')
+    date_joined = serializers.DateTimeField(
+        format="%d-%m-%Y", input_formats=['%d-%m-%Y'])
+
+    def validate(self, data):
+        first_name = data.get('first_name', None)
+        last_name = data.get("last_name", None)
+        date_joined = data.get('date_joined', None)
+        seniority = data.get('seniority', None)
+        tenure = data.get('tenure', None)
+        points_balance = data.get('points_balance', None)
+
+        return {'first_name': first_name, 'last_name': last_name,
+                'date_joined': date_joined, 'seniority': seniority,
+                'tenure': tenure, 'points_balance': points_balance}
+
+    class Meta:
+        model = Profile
+        fields = ['username', 'first_name', 'last_name',
+                  'date_joined', 'seniority', 'tenure', 'points_balance']
+        read_only_fields = ('username', 'points_balance', 'tenure', )
+
+    def get_tenure(self, obj):
+        """
+        A function that returns the tenure of an employee.
+        It takes in the current time  and substracts the
+        time when the employee joined.
+        This field(tenure) is not part of the model
+        """
+        return (datetime.now(timezone.utc) - obj.date_joined).days / 365.25
