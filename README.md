@@ -11,6 +11,7 @@ PTO.
 ## Features
 
 - Users can create an account and log in.
+- Users can create a request
 
 
 ## Main requirements include:

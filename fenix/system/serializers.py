@@ -3,7 +3,7 @@ from rest_framework import serializers, status
 from rest_framework.response import Response
 from datetime import datetime, timezone
 
-from .models import User, Profile
+from .models import User, RequestPoints, Profile
 from fenix.utilities.custom_validators import ValidateUserData
 
 
@@ -27,6 +27,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'username', 'password', 'token']
         read_only_fields = ('token', )
+
+    def create(self, validated_data):
+        profile = Profile()
+        return User.objects.create_user(**validated_data, profile=profile)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -55,10 +59,22 @@ class LoginSerializer(serializers.Serializer):
             'token': user.token
         }
 
+        class Meta:
+            model = User
+            fields = ['email', 'username', 'token']
+            read_only_fields = ('token',)
+
+
+class RequestPointsSerializer(serializers.HyperlinkedModelSerializer):
+    """Class for creating a nd withdrawing requests for points"""
+    owner = serializers.ReadOnlyField()
+
     class Meta:
-        model = User
-        fields = ['email', 'username', 'token']
-        read_only_fields = ('token',)
+        model = RequestPoints
+        fields = ('id', 'number_of_points', 'owner', 'status',
+                  'created_at', 'updated_at')
+
+        read_only_fields = ('owner',)
 
 
 class ProfileSerializer(serializers.ModelSerializer):

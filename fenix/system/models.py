@@ -1,12 +1,16 @@
 import jwt
-from django.db import models
+import time
 from django.utils import timezone
 from datetime import datetime, timedelta
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin
 )
+from django.db import models
 from django.conf import settings
 
 
@@ -86,3 +90,23 @@ class Profile(models.Model):
     date_joined = models.DateTimeField(auto_now=False, default=timezone.now)
     points_balance = models.IntegerField(default=0, null=False, blank=False)
     seniority = models.CharField(blank=True, max_length=5)
+
+
+class RequestPoints(models.Model):
+    PENDING = 'pending'
+    ACTIVE = 'active'
+    DELIVERED = 'delivered'
+    STATUS_CHOICES = ((PENDING, 'pending'),
+                      (ACTIVE, 'active'), (DELIVERED, 'delivered'),)
+    owner = models.ForeignKey('User', on_delete=models.CASCADE)
+    number_of_points = models.IntegerField(default=0)
+    request_reason = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.status
+
+    class Meta:
+        ordering = ('status',)
