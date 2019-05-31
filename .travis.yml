@@ -1,0 +1,23 @@
+language: python
+python:
+    - "3.7-dev"
+addons:
+  postgresql: "9.4"
+
+before_install:
+  - sudo -u postgres psql -c "CREATE USER testuser WITH PASSWORD 'password'"
+  - sudo -u postgres psql -c "ALTER ROLE testuser SUPERUSER"
+
+install:
+    - pip install -r requirements.txt
+
+before_script:
+    - psql -c "create database accrualststem;" -U postgres
+    - python manage.py makemigrations
+    - python manage.py migrate
+    
+script:
+    - coverage run --source='.' manage.py test
+          
+after_success:
+    - coveralls
