@@ -1,5 +1,7 @@
 import jwt
 from django.db import models
+from django.utils import timezone
+from datetime import datetime, timedelta
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -11,14 +13,16 @@ from django.conf import settings
 class UserManager(BaseUserManager):
     """Create models for the user"""
 
-    def create_user(self, username, email, password=None):
+    def create_user(self, username, email, profile, password=None):
         user = self.model(
             username=username, email=self.normalize_email(email))
         user.set_password(password)
         user.save()
+        user.profile = profile
+        user.profile.save()
         return user
 
-    def create_superuser(self, username, email, password):
+    def create_superuser(self, username, email, profile, password):
         """ Create a user with admin rights"""
         if password is None:
             raise TypeError('Admins must have a password')
@@ -27,6 +31,8 @@ class UserManager(BaseUserManager):
         user.is_superuser = True
         user.is_staff = True
         user.save()
+        user.profile = profile
+        user.profile.save()
         return user
 
 
@@ -70,3 +76,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def token(self):
         return self._generate_jwt_token()
+
+
+class Profile(models.Model):
+    """Defines the  descriptive data for the different user profiles created"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name = models.TextField(blank=True)
+    last_name = models.TextField(blank=True)
+    date_joined = models.DateTimeField(auto_now=False, default=timezone.now)
+    points_balance = models.IntegerField(default=0, null=False, blank=False)
+    seniority = models.CharField(blank=True, max_length=5)
