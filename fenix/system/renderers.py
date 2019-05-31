@@ -1,6 +1,7 @@
 import json
 
 from rest_framework.renderers import JSONRenderer
+from rest_framework.utils.serializer_helpers import ReturnList
 
 
 class UserJSONRenderer(JSONRenderer):
@@ -33,7 +34,7 @@ class UserJSONRenderer(JSONRenderer):
         })
 
 
-class ProfileRenderer(JSONRenderer):
+class GeneralRenderer(JSONRenderer):
     charset = 'utf-8'
     object_name = 'results'
 

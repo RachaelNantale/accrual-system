@@ -1,12 +1,11 @@
-
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import (RegisterSerializer, LoginSerializer,
-                          ProfileSerializer)
+                          RequestPointsSerializer, ProfileSerializer)
 
-from .models import User, Profile
-from .renderers import UserJSONRenderer, ProfileRenderer
+from .models import User, RequestPoints, Profile
+from .renderers import UserJSONRenderer, GeneralRenderer
 from fenix.utilities.exceptions import UserCannotEditProfile
 from fenix.utilities.user_management import (get_id_from_token,
                                              getUserFromDatabase)
@@ -35,13 +34,32 @@ class LoginView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class RequestPointsView(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = RequestPointsSerializer
+    renderer_classes = (GeneralRenderer, )
+    queryset = RequestPoints.objects.all()
+
+    def post(self, request, username, *args, **kwargs):
+        user_requesting = getUserFromDatabase(username=username)
+        current_user_id, current_username = get_id_from_token(request)
+        request_data = {
+            "owner": current_user_id,
+            "status": request.data.get('status')
+        }
+        serializer = serializer_class(data=request_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     """
     Allow users  to retrieve and edit their profiles
     Params: username: A username is needed in order to get a specific profile.
     """
     permission_classes = (IsAuthenticated, )
-    renderer_classes = (ProfileRenderer, )
+    renderer_classes = (GeneralRenderer, )
     serializer_class = ProfileSerializer
 
     def get(self, request, username, *args, **kwargs):
