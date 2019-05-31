@@ -1,4 +1,7 @@
 
+[![Build Status](https://travis-ci.org/RachaelNantale/accrual-system.svg?branch=develop)](https://travis-ci.org/RachaelNantale/accrual-system)
+[![Coverage Status](https://coveralls.io/repos/github/RachaelNantale/accrual-system/badge.svg?branch=develop)](https://coveralls.io/github/RachaelNantale/accrual-system?branch=develop)
+[![Maintainability](https://api.codeclimate.com/v1/badges/1aeba998d3eb93fe3104/maintainability)](https://codeclimate.com/github/RachaelNantale/accrual-system/maintainability)
 # Accrual System - Managing Employee Benefits
 
 ## Description
